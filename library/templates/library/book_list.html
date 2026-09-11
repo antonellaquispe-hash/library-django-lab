@@ -137,9 +137,9 @@
     <div class="books-grid">
         {% for libro in libros %}
         <a href="{% url 'library:detail' libro.pk %}" class="book-card">
-            {% if libro.portada %}
-                <img class="book-cover" src="{{ libro.portada.url }}" alt="{{ libro.titulo }}">
-            {% else %}
+{% if libro.portada %}
+                    <img class="book-cover" src="{{ libro.portada }}" alt="{{ libro.titulo }}">
+                {% else %}
                 <div class="cover-placeholder">Sin portada</div>
             {% endif %}
             <div class="book-info">

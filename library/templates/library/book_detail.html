@@ -100,7 +100,7 @@
     <div class="detail-card">
         <div class="detail-cover">
             {% if libro.portada %}
-                <img class="detail-cover" src="{{ libro.portada.url }}" alt="{{ libro.titulo }}">
+                <img class="detail-cover" src="{{ libro.portada }}" alt="{{ libro.titulo }}">
             {% else %}
                 <div class="cover-placeholder">Sin portada</div>
             {% endif %}
