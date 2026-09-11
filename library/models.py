@@ -51,7 +51,7 @@ class Libro(models.Model):
     portada = models.ImageField(upload_to='libros/', blank=True, null=True)
     autor = models.ForeignKey(
         Autor,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='libros',
         verbose_name='Autor',
     )
