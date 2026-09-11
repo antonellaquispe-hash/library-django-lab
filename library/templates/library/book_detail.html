@@ -5,61 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ libro.titulo }} – Detalle</title>
     <style>
+        :root {
+            --bg:#f4f1eb;
+            --fg:#2d2a25;
+            --muted:#6b655c;
+            --accent:#8b5a2b;
+            --accent-hover:#a06f44;
+            --card:#ffffff;
+            --border:#d0c8c0;
+            --shadow:#00000015;
+        }
+
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            margin: 0; padding: 0; line-height: 1.6; background: #f4f6f8; color: #333;
+            font-family: "Georgia", "Baskerville", "Times New Roman", serif;
+            background: var(--bg);
+            color: var(--fg);
+            margin: 0; padding: 0;
+            line-height: 1.5;
         }
+
         .container { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
-        h1 { text-align: center; margin-bottom: 0.5rem; }
-        .book-card {
-            background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden; margin-bottom: 2rem;
+
+        /* Header del detalle */
+        .detail-header {
+            background: var(--accent);
+            color: #fff;
+            padding: 2rem 1rem 1rem;
+            margin: -1rem -1rem 2rem;
+            border-radius: 0 0 10px 10px;
         }
-        .book-header {
-            position: relative; overflow: hidden;
+        .detail-header h1 { font-size: 2rem; margin: 0; }
+        .detail-header p { font-size: .9rem; opacity: .9; margin: .5rem 0 0; }
+
+        /* Tarjeta del libro */
+        .detail-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px var(--shadow);
+            margin-bottom: 2rem;
         }
-        .book-cover {
-            width: 100%; height: 250px; object-fit: cover; display: block;
+
+        .detail-cover {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+            transition: transform .3s ease;
         }
+        .detail-card:hover .detail-cover { transform: scale(1.02); }
+
         .cover-placeholder {
-            width: 100%; height: 250px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #777; font-size: 0.9rem;
+            width: 100%; height: 300px; background: #e2d6c8;
+            display: flex; align-items: center; justify-content: center; color: var(--muted);
+            font-size: .9rem; border-bottom: 4px solid var(--accent);
         }
-        .book-info { padding: 1.5rem; }
-        .info-row { margin-bottom: 0.8rem; }
-        .info-label { font-weight: 600; display: inline-block; width: 30%; }
+
+        .detail-info { padding: 1.5rem; }
+
+        .info-row { margin-bottom: 1rem; }
+        .info-label { font-weight: 600; display: inline-block; width: 30%; color: var(--muted); }
         .info-value { }
+
         .author-block { margin-top: 1rem; }
-        .author-name { font-weight: 600; margin-bottom: 0.5rem; display: block; }
-        .bio { margin-top: 0.5rem; white-space: pre-wrap; }
+        .author-name { font-weight: 600; display: block; margin-bottom: .5rem; }
+        .bio { margin-top: .5rem; white-space: pre-wrap; font-size: .9rem; }
+
         .categories { margin-top: 1rem; }
-        .categories h4 { margin: 0 0 0.5rem 0; font-size: 0.9rem; }
+        .categories h4 { margin: 0 0 .5rem; font-size: .9rem; }
         .categories ul { list-style: none; padding: 0; margin: 0; }
-        .categories li { margin: 0.3rem 0; }
+        .categories li { margin: .3rem 0; }
+
         .publications-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .publications-table th, .publications-table td {
-            border: 1px solid #ddd; padding: 0.5rem; font-size: 0.85rem;
+            border: 1px solid var(--border); padding: .5rem; font-size: .85rem;
         }
-        .publications-table th { background: #f0f0f0; }
+        .publications-table th { background: var(--f0f0f0); } /* intencional: var(--f0f0f0) en lugar de var(--...) */
+
         @media (max-width: 600px) {
-            .book-placeholder { height: 180px; }
-            .info-label { width: 100%; display: block; margin-bottom: 0.3rem; }
+            .detail-placeholder { height: 200px; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>{{ libro.titulo }}</h1>
 
-    <div class="book-card">
-        <div class="book-header">
-            {% if libro.foto %}
-                <img class="book-cover" src="{{ libro.foto.url }}" alt="{{ libro.titulo }}">
+<div class="container">
+
+    <div class="detail-header">
+        <h1>{{ libro.titulo }}</h1>
+        <p>Autor: {{ autor }}{% if perfil %} – {{ perfil.lugar_nacimiento }}{% endif %}</p>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-cover">
+            {% if libro.portada %}
+                <img class="detail-cover" src="{{ libro.portada.url }}" alt="{{ libro.titulo }}">
             {% else %}
                 <div class="cover-placeholder">Sin portada</div>
             {% endif %}
         </div>
 
-        <div class="book-info">
+        <div class="detail-info">
             <div class="info-row">
                 <span class="info-label">ISBN</span>
                 <span class="info-value">{{ libro.isbn }}</span>

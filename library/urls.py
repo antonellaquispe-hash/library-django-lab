@@ -5,6 +5,8 @@ URLs de la aplicación library.
 - /<int:pk>/             → detalle de un libro (book_detail)
 """
 
+app_name = 'library'
+
 from django.urls import path
 
 from . import views

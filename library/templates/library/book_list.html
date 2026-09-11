@@ -5,56 +5,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca – Catálogo de Libros</title>
     <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            margin: 0; padding: 0; line-height: 1.6; background: #f4f6f8; color: #333;
+        /* --- Variables y raíz :root para modo oscuro claro sutil --- */
+        :root {
+            --bg:#f4f1eb;           /* color de fondo tipo papel viejo */
+            --fg:#2d2a25;           /* texto principal */
+            --muted:#6b655c;         /* texto secundario */
+            --accent:#8b5a2b;       /* tono madera principal */
+            --accent-hover:#a06f44;/* madera al pasar el ratón */
+            --card:#ffffff;         /* tarjetas blancas */
+            --border:#d0c8c0;       /* borde sutil */
+            --shadow:#00000015;    /* sombra suave */
         }
+
+        body {
+            font-family: "Georgia", "Baskerville", "Times New Roman", serif;
+            background: var(--bg);
+            color: var(--fg);
+            margin: 0; padding: 0;
+            line-height: 1.5;
+        }
+
+        /* Encabezado tipo biblioteca antigua */
+        header {
+            background: var(--accent);
+            color: #fff;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,.15);
+        }
+        header h1 {
+            font-size: 2.4rem;
+            font-weight: normal;
+            letter-spacing: -1px;
+            margin: 0;
+        }
+        header p {
+            font-size: 1rem;
+            opacity: .9;
+            margin-top: .5rem;
+
+        }
+
         .container { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
-        h1 { text-align: center; margin-bottom: 1.5rem; }
+
+        /* Grid de libros */
         .books-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 1.5rem;
         }
+
         .book-card {
-            background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px var(--shadow);
+            transition: transform .2s ease, box-shadow .2s ease;
+            display: flex; flex-direction: column;
+            height: 100%;
         }
-        .book-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(0,0,0,.1);
+        }
+
         .book-cover {
-            width: 100%; height: 180px; object-fit: cover; display: block;
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+            transition: transform .3s ease;
         }
+        .book-card:hover .book-cover { transform: scale(1.03); }
+
         .cover-placeholder {
-            width: 100%; height: 180px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #777; font-size: 0.9rem;
+            width: 100%;
+            height: 220px;
+            background: #e2d6c8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: .85rem;
+            border-bottom: 4px solid var(--accent);
         }
-        .book-info { padding: 0.8rem 0.8rem 1.2rem; }
-        .book-info h3 { margin: 0 0 0.3rem; font-size: 1rem; }
-        .book-info p { margin: 0.1rem 0; font-size: 0.85rem; }
-        .book-info .autor { color: #555; }
+
+        .book-info {
+            padding: 1rem 1rem 1.2rem;
+            flex-grow: 1;
+        }
+        .book-info h3 {
+            margin: 0 0 .3rem;
+            font-size: 1.05rem;
+            font-weight: normal;
+            line-height: 1.3;
+        }
+        .book-info p {
+            margin: .3rem 0;
+            font-size: .85rem;
+            color: var(--muted);
+        }
+        .book-info .autor { color: var(--muted); }
+        .book-info .isbn { font-style: italic; }
+
+        /* Responsive */
         @media (max-width: 600px) {
-            .book-placeholder { height: 140px; }
-            .book-info h3 { font-size: 0.9rem; }
+            .book-placeholder { height: 160px; }
+            .book-info h3 { font-size: .95rem; }
+        }
+
+        /* Enlace dentro de la tarjeta */
+        .book-card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
         }
     </style>
 </head>
 <body>
+
+<header>
+    <h1>Biblioteca</h1>
+    <p>Catálogo de libros registrados</p>
+</header>
+
 <div class="container">
-    <h1>Catálogo de Libros</h1>
+    <h2>Catálogo de Libros</h2>
 
     <div class="books-grid">
         {% for libro in libros %}
-        <a href="{% url 'library:detail' libro.pk %}" style="text-decoration:none; color:inherit;">
-            <div class="book-card">
-                {% if libro.foto %}
-                    <img class="book-cover" src="{{ libro.foto.url }}" alt="{{ libro.titulo }}">
-                {% else %}
-                    <div class="cover-placeholder">Sin portada</div>
-                {% endif %}
-                <div class="book-info">
-                    <h3>{{ libro.titulo }}</h3>
-                    <p class="autor">Autor: {{ libro.autor }}</p>
-                    <p>ISBN: {{ libro.isbn }}</p>
-                </div>
+        <a href="{% url 'library:detail' libro.pk %}" class="book-card">
+            {% if libro.portada %}
+                <img class="book-cover" src="{{ libro.portada.url }}" alt="{{ libro.titulo }}">
+            {% else %}
+                <div class="cover-placeholder">Sin portada</div>
+            {% endif %}
+            <div class="book-info">
+                <h3>{{ libro.titulo }}</h3>
+                <p class="autor">Autor: {{ libro.autor }}</p>
+                <p class="isbn">ISBN: {{ libro.isbn }}</p>
             </div>
         </a>
         {% empty %}
