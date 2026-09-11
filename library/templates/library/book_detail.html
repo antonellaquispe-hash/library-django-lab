@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ libro.titulo }} – Detalle</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0; padding: 0; line-height: 1.6; background: #f4f6f8; color: #333;
+        }
+        .container { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { text-align: center; margin-bottom: 0.5rem; }
+        .book-card {
+            background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden; margin-bottom: 2rem;
+        }
+        .book-header {
+            position: relative; overflow: hidden;
+        }
+        .book-cover {
+            width: 100%; height: 250px; object-fit: cover; display: block;
+        }
+        .cover-placeholder {
+            width: 100%; height: 250px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #777; font-size: 0.9rem;
+        }
+        .book-info { padding: 1.5rem; }
+        .info-row { margin-bottom: 0.8rem; }
+        .info-label { font-weight: 600; display: inline-block; width: 30%; }
+        .info-value { }
+        .author-block { margin-top: 1rem; }
+        .author-name { font-weight: 600; margin-bottom: 0.5rem; display: block; }
+        .bio { margin-top: 0.5rem; white-space: pre-wrap; }
+        .categories { margin-top: 1rem; }
+        .categories h4 { margin: 0 0 0.5rem 0; font-size: 0.9rem; }
+        .categories ul { list-style: none; padding: 0; margin: 0; }
+        .categories li { margin: 0.3rem 0; }
+        .publications-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .publications-table th, .publications-table td {
+            border: 1px solid #ddd; padding: 0.5rem; font-size: 0.85rem;
+        }
+        .publications-table th { background: #f0f0f0; }
+        @media (max-width: 600px) {
+            .book-placeholder { height: 180px; }
+            .info-label { width: 100%; display: block; margin-bottom: 0.3rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>{{ libro.titulo }}</h1>
+
+    <div class="book-card">
+        <div class="book-header">
+            {% if libro.foto %}
+                <img class="book-cover" src="{{ libro.foto.url }}" alt="{{ libro.titulo }}">
+            {% else %}
+                <div class="cover-placeholder">Sin portada</div>
+            {% endif %}
+        </div>
+
+        <div class="book-info">
+            <div class="info-row">
+                <span class="info-label">ISBN</span>
+                <span class="info-value">{{ libro.isbn }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Año publicación</span>
+                <span class="info-value">{{ libro.anio_publicacion }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Páginas</span>
+                <span class="info-value">{{ libro.numero_paginas }}</span>
+            </div>
+
+            <div class="author-block">
+                <strong class="author-name">Autor:</strong> {{ autor }}
+                {% if perfil %}
+                    <div class="bio">{{ perfil.biografia }}</div>
+                    <small>Lugar de nacimiento: {{ perfil.lugar_nacimiento }}</small>
+                {% else %}
+                    <small>Sin datos biográficos</small>
+                {% endif %}
+            </div>
+
+            <div class="categories">
+                <h4>Categorías</h4>
+                <ul>
+                {% for cat in categorias %}
+                    <li>{{ cat.nombre }}</li>
+                {% empty %}
+                    <li>Sin categorías</li>
+                {% endfor %}
+                </ul>
+            </div>
+
+            <table class="publications-table">
+                <thead>
+                <tr>
+                    <th>Editorial</th>
+                    <th>Fecha</th>
+                    <th>Edición</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for pub in publicaciones %}
+                    <tr>
+                        <td>{{ pub.editorial.nombre }}</td>
+                        <td>{{ pub.fecha }}</td>
+                        <td>{{ pub.edicion }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">Sin publicaciones registradas</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
