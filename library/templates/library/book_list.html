@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca – Catálogo de Libros</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0; padding: 0; line-height: 1.6; background: #f4f6f8; color: #333;
+        }
+        .container { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { text-align: center; margin-bottom: 1.5rem; }
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        .book-card {
+            background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .book-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .book-cover {
+            width: 100%; height: 180px; object-fit: cover; display: block;
+        }
+        .cover-placeholder {
+            width: 100%; height: 180px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #777; font-size: 0.9rem;
+        }
+        .book-info { padding: 0.8rem 0.8rem 1.2rem; }
+        .book-info h3 { margin: 0 0 0.3rem; font-size: 1rem; }
+        .book-info p { margin: 0.1rem 0; font-size: 0.85rem; }
+        .book-info .autor { color: #555; }
+        @media (max-width: 600px) {
+            .book-placeholder { height: 140px; }
+            .book-info h3 { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Catálogo de Libros</h1>
+
+    <div class="books-grid">
+        {% for libro in libros %}
+        <a href="{% url 'library:detail' libro.pk %}" style="text-decoration:none; color:inherit;">
+            <div class="book-card">
+                {% if libro.foto %}
+                    <img class="book-cover" src="{{ libro.foto.url }}" alt="{{ libro.titulo }}">
+                {% else %}
+                    <div class="cover-placeholder">Sin portada</div>
+                {% endif %}
+                <div class="book-info">
+                    <h3>{{ libro.titulo }}</h3>
+                    <p class="autor">Autor: {{ libro.autor }}</p>
+                    <p>ISBN: {{ libro.isbn }}</p>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+            <p>No hay libros registrados.</p>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>
