@@ -63,6 +63,7 @@ El modelo Publication permite almacenar información propia de la relación:
 Fecha de publicación.
 Edición.
 Esquema de relaciones
+
                     ┌─────────────────┐
                     │     AUTHOR      │
                     └────────┬────────┘
@@ -98,6 +99,7 @@ Esquema de relaciones
                     ┌─────────────────┐
                     │ AUTHOR PROFILE  │
                     └─────────────────┘
+                    
 Modelo intermedio: Publication
 
 Publication permite representar la relación entre un libro y una editorial agregando información propia de dicha relación.
