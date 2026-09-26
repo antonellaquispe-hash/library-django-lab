@@ -1,8 +1,10 @@
 """
 URLs de la aplicación library.
 
-- /                      → lista de libros (book_list)
-- /<int:pk>/             → detalle de un libro (book_detail)
+La biblioteca se muestra completa en una única URL:
+
+- /                      → catálogo completo (libros, autores, categorías, editoriales)
+- /<int:pk>/             → redirige a /#libro-<pk> para conservar los enlaces antiguos
 """
 
 app_name = 'library'
@@ -12,6 +14,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.book_list, name='list'),
+    path('', views.dashboard, name='dashboard'),
     path('<int:pk>/', views.book_detail, name='detail'),
 ]

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es" data-tema="claro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca — Catálogo completo</title>
+    {% load library_extras %}
+    <style>
+        :root {
+            --bg: #f4f1eb;
+            --bg-alt: #ece7de;
+            --fg: #2d2a25;
+            --muted: #6b655c;
+            --accent: #8b5a2b;
+            --accent-hover: #a06f44;
+            --accent-soft: #f0e2d4;
+            --card: #ffffff;
+            --border: #d0c8c0;
+            --shadow: #00000015;
+            --shadow-lg: #00000026;
+        }
+
+        html[data-tema="oscuro"] {
+            --bg: #191714;
+            --bg-alt: #221f1b;
+            --fg: #ece7de;
+            --muted: #a49c90;
+            --accent: #c98a4b;
+            --accent-hover: #e0a163;
+            --accent-soft: #2e2620;
+            --card: #221f1b;
+            --border: #3a352e;
+            --shadow: #00000040;
+            --shadow-lg: #00000066;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Georgia", "Baskerville", "Times New Roman", serif;
+            background: var(--bg);
+            color: var(--fg);
+            margin: 0;
+            line-height: 1.5;
+            transition: background .25s ease, color .25s ease;
+        }
+
+        a { color: var(--accent); }
+
+        .contenedor { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; }
+
+        /* ---------- Barra superior ---------- */
+        .barra {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 14px var(--shadow);
+        }
+
+        .barra-inner {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 1rem 0;
+        }
+
+        .marca { display: flex; align-items: baseline; gap: .6rem; margin-right: auto; }
+        .marca h1 { font-size: 1.6rem; font-weight: normal; margin: 0; letter-spacing: -.5px; }
+        .marca span { font-size: .8rem; opacity: .85; }
+
+        .buscador {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .buscador input {
+            width: 260px;
+            padding: .55rem .8rem .55rem 2.1rem;
+            border: 1px solid #ffffff40;
+            border-radius: 999px;
+            background: #ffffff1f;
+            color: #fff;
+            font: inherit;
+            font-size: .9rem;
+            outline: none;
+            transition: width .2s ease, background .2s ease;
+        }
+        .buscador input::placeholder { color: #ffffffb0; }
+        .buscador input:focus { width: 320px; background: #ffffff33; }
+        .buscador svg {
+            position: absolute;
+            left: .7rem;
+            width: 15px;
+            height: 15px;
+            fill: none;
+            stroke: #ffffffc0;
+            stroke-width: 2;
+            pointer-events: none;
+        }
+
+        .boton-icono {
+            background: #ffffff1f;
+            border: 1px solid #ffffff40;
+            border-radius: 999px;
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-size: 1rem;
+            height: 38px;
+            width: 38px;
+            transition: background .2s ease;
+        }
+        .boton-icono:hover { background: #ffffff33; }
+
+        /* ---------- Pestañas ---------- */
+        .pestanas {
+            display: flex;
+            gap: .35rem;
+            padding: 1.1rem 0 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .pestanas::-webkit-scrollbar { display: none; }
+
+        .pestana {
+            appearance: none;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            background: var(--bg-alt);
+            color: var(--muted);
+            cursor: pointer;
+            font: inherit;
+            font-size: .9rem;
+            padding: .6rem 1.1rem;
+            border-radius: 10px 10px 0 0;
+            white-space: nowrap;
+            transition: background .2s ease, color .2s ease;
+        }
+        .pestana:hover { color: var(--fg); }
+        .pestana.activa {
+            background: var(--card);
+            color: var(--accent);
+            font-weight: 600;
+            box-shadow: 0 -2px 0 var(--accent) inset;
+        }
+        .pestana .cuenta {
+            display: inline-block;
+            margin-left: .4rem;
+            padding: 0 .45rem;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: .75rem;
+        }
+
+        /* ---------- Resumen ---------- */
+        .resumen {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: .8rem;
+            margin: 1.5rem 0 0;
+        }
+        .dato {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .9rem 1rem;
+        }
+        .dato .cifra { font-size: 1.7rem; color: var(--accent); line-height: 1.1; }
+        .dato .etiqueta { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+        /* ---------- Paneles ---------- */
+        .panel { display: none; }
+        .panel.activo { display: block; }
+
+        .seccion-titulo {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 2rem 0 1.1rem;
+        }
+        .seccion-titulo h2 { font-size: 1.35rem; font-weight: normal; margin: 0; }
+        .seccion-titulo p { margin: 0; color: var(--muted); font-size: .85rem; }
+
+        /* ---------- Rejilla de libros ---------- */
+        .rejilla {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 1.4rem;
+        }
+
+        .tarjeta {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px var(--shadow);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            text-align: left;
+            padding: 0;
+            font: inherit;
+            color: inherit;
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        }
+        .tarjeta:hover, .tarjeta:focus-visible {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 22px var(--shadow-lg);
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        .portada {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            display: block;
+            background: var(--bg-alt);
+            transition: transform .35s ease;
+        }
+        .tarjeta:hover .portada { transform: scale(1.04); }
+
+        .portada-vacia {
+            height: 260px;
+            background: linear-gradient(160deg, var(--accent-soft), var(--bg-alt));
+            border-bottom: 3px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        .cuerpo { padding: 1rem 1rem 1.15rem; display: flex; flex-direction: column; flex-grow: 1; }
+        .cuerpo h3 { margin: 0 0 .35rem; font-size: 1.05rem; line-height: 1.3; font-weight: 600; }
+        .cuerpo .meta { margin: .1rem 0; font-size: .84rem; color: var(--muted); }
+        .cuerpo .meta strong { color: var(--fg); font-weight: 600; }
+
+        .chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .8rem; }
+        .chip {
+            font-size: .72rem;
+            letter-spacing: .3px;
+            text-transform: uppercase;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-radius: 999px;
+            padding: .2rem .6rem;
+        }
+
+        /* ---------- Autores ---------- */
+        .rejilla-autores {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.2rem;
+        }
+        .ficha-autor {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 10px;
+            padding: 1.1rem 1.2rem;
+            box-shadow: 0 2px 6px var(--shadow);
+        }
+        .ficha-autor h3 { margin: 0 0 .15rem; font-size: 1.1rem; }
+        .ficha-autor .sub { color: var(--muted); font-size: .84rem; margin: 0 0 .6rem; }
+        .ficha-autor dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: .25rem .7rem; font-size: .86rem; }
+        .ficha-autor dt { color: var(--muted); }
+        .ficha-autor dd { margin: 0; }
+        .ficha-autor .bio {
+            margin-top: .7rem;
+            padding-top: .7rem;
+            border-top: 1px dashed var(--border);
+            font-size: .87rem;
+            color: var(--muted);
+        }
+
+        /* ---------- Categorías ---------- */
+        .rejilla-categorias {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.1rem;
+        }
+        .categoria {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: 0 2px 6px var(--shadow);
+        }
+        .categoria h3 { margin: 0 0 .3rem; color: var(--accent); font-size: 1.1rem; }
+        .categoria p { margin: 0 0 .7rem; font-size: .87rem; color: var(--muted); }
+        .categoria .conteo { font-size: .78rem; color: var(--muted); }
+
+        /* ---------- Editoriales ---------- */
+        .tabla {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px var(--shadow);
+        }
+        .tabla th, .tabla td { padding: .8rem 1rem; text-align: left; font-size: .88rem; border-bottom: 1px solid var(--border); }
+        .tabla th { background: var(--bg-alt); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: .74rem; letter-spacing: .5px; }
+        .tabla tbody tr:last-child td { border-bottom: none; }
+        .tabla tbody tr:hover { background: var(--accent-soft); }
+
+        /* ---------- Modal ---------- */
+        .velo {
+            position: fixed;
+            inset: 0;
+            background: #000000b3;
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            z-index: 60;
+        }
+        .velo.visible { display: flex; }
+
+        .ficha {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            max-width: 780px;
+            width: 100%;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 60px var(--shadow-lg);
+            animation: subir .22s ease;
+        }
+        @keyframes subir { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+        .ficha-portada { width: 100%; height: 300px; object-fit: cover; display: block; background: var(--bg-alt); }
+        .ficha-vacia { height: 180px; background: linear-gradient(160deg, var(--accent-soft), var(--bg-alt)); display: flex; align-items: center; justify-content: center; color: var(--muted); }
+
+        .ficha-cuerpo { padding: 1.6rem 1.8rem 1.8rem; }
+        .ficha-cuerpo h2 { margin: 0 0 .2rem; font-size: 1.7rem; line-height: 1.2; }
+        .ficha-cuerpo .subtitulo { color: var(--muted); margin: 0 0 1.2rem; font-size: .95rem; }
+
+        .cerrar {
+            position: sticky;
+            top: .8rem;
+            float: right;
+            margin: .8rem .8rem -3rem 0;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--fg);
+            cursor: pointer;
+            font-size: 1.2rem;
+            height: 34px;
+            width: 34px;
+            line-height: 1;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        .cerrar:hover { border-color: var(--accent); color: var(--accent); }
+
+        .sinopsis { font-size: .95rem; white-space: pre-wrap; }
+
+        .datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .9rem; margin: 1.4rem 0; }
+        .dato-mini { background: var(--bg-alt); border-radius: 8px; padding: .7rem .9rem; }
+        .dato-mini .v { font-size: 1.05rem; }
+        .dato-mini .e { font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+
+        .bloque { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px dashed var(--border); }
+        .bloque h4 { margin: 0 0 .6rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .8px; color: var(--accent); }
+        .bloque p { margin: 0; font-size: .9rem; }
+
+        /* ---------- Vacío / pie ---------- */
+        .vacio { text-align: center; color: var(--muted); padding: 3rem 1rem; font-size: .95rem; }
+        .oculto { display: none !important; }
+
+        .pie { margin: 3rem 0 2rem; padding-top: 1.2rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; text-align: center; }
+
+        @media (max-width: 620px) {
+            .marca h1 { font-size: 1.25rem; }
+            .marca span { display: none; }
+            .buscador input { width: 150px; }
+            .buscador input:focus { width: 190px; }
+            .portada, .portada-vacia { height: 200px; }
+            .ficha-cuerpo { padding: 1.2rem; }
+            .tabla th:nth-child(3), .tabla td:nth-child(3) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="barra">
+    <div class="contenedor barra-inner">
+        <div class="marca">
+            <h1>Biblioteca</h1>
+            <span>Catálogo completo</span>
+        </div>
+
+        <label class="buscador">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+            <input id="buscar" type="search" placeholder="Buscar título, autor, ISBN…  ( / )" autocomplete="off">
+        </label>
+
+        <button class="boton-icono" id="tema" title="Cambiar entre tema claro y oscuro" aria-label="Cambiar tema">◐</button>
+    </div>
+
+    <div class="contenedor">
+        <nav class="pestanas" id="pestanas">
+            <button class="pestana activa" data-panel="libros">Libros <span class="cuenta">{{ libros|length }}</span></button>
+            <button class="pestana" data-panel="autores">Autores <span class="cuenta">{{ autores|length }}</span></button>
+            <button class="pestana" data-panel="categorias">Categorías <span class="cuenta">{{ categorias|length }}</span></button>
+            <button class="pestana" data-panel="editoriales">Editoriales <span class="cuenta">{{ editoriales|length }}</span></button>
+        </nav>
+    </div>
+</header>
+
+<main class="contenedor">
+
+    <div class="resumen">
+        <div class="dato"><div class="cifra">{{ libros|length }}</div><div class="etiqueta">Libros</div></div>
+        <div class="dato"><div class="cifra">{{ autores|length }}</div><div class="etiqueta">Autores</div></div>
+        <div class="dato"><div class="cifra">{{ total_paginas }}</div><div class="etiqueta">Páginas</div></div>
+        <div class="dato"><div class="cifra">{{ categorias|length }}</div><div class="etiqueta">Categorías</div></div>
+        <div class="dato"><div class="cifra">{{ editoriales|length }}</div><div class="etiqueta">Editoriales</div></div>
+    </div>
+
+    <!-- ============ LIBROS ============ -->
+    <section class="panel activo" id="panel-libros">
+        <div class="seccion-titulo">
+            <h2>Catálogo de libros</h2>
+            <p id="conteo-libros">{{ libros|length }} libro{{ libros|length|pluralize:"s" }}</p>
+        </div>
+
+        <div class="rejilla" id="rejilla-libros">
+            {% for libro in libros %}
+            <button class="tarjeta" data-libro="{{ libro.pk }}"
+                    data-buscar="{{ libro.titulo }} {{ libro.autor }} {{ libro.isbn }} {{ libro.anio_publicacion }}{% for cat in libro.categorias.all %} {{ cat.nombre }}{% endfor %}">
+                {% if libro.portada|media_url %}
+                    <img class="portada" src="{{ libro.portada|media_url }}" alt="Portada de {{ libro.titulo }}" loading="lazy">
+                {% else %}
+                    <div class="portada-vacia">Sin portada</div>
+                {% endif %}
+                <div class="cuerpo">
+                    <h3>{{ libro.titulo }}</h3>
+                    <p class="meta">{{ libro.autor }}</p>
+                    <p class="meta"><strong>{{ libro.anio_publicacion }}</strong> · {{ libro.numero_paginas }} págs.</p>
+                    <div class="chips">
+                        {% for cat in libro.categorias.all %}<span class="chip">{{ cat.nombre }}</span>{% endfor %}
+                    </div>
+                </div>
+            </button>
+            {% empty %}
+            <p class="vacio">No hay libros registrados.</p>
+            {% endfor %}
+        </div>
+        <p class="vacio oculto" id="vacio-libros">Ningún libro coincide con la búsqueda.</p>
+    </section>
+
+    <!-- ============ AUTORES ============ -->
+    <section class="panel" id="panel-autores">
+        <div class="seccion-titulo">
+            <h2>Autores</h2>
+            <p id="conteo-autores">{{ autores|length }} autor{{ autores|length|pluralize:"es" }}</p>
+        </div>
+
+        <div class="rejilla-autores" id="rejilla-autores">
+            {% for autor in autores %}
+            <article class="ficha-autor" data-buscar="{{ autor.nombre }} {{ autor.apellido }} {{ autor.nacionalidad }}">
+                <h3>{{ autor.nombre }} {{ autor.apellido }}</h3>
+                <p class="sub">{{ autor.nacionalidad }}</p>
+                <dl>
+                    <dt>Nacimiento</dt><dd>{{ autor.fecha_nacimiento|date:"j \d\e F \d\e Y" }}</dd>
+                    {% if autor.perfil_autor.lugar_nacimiento %}
+                    <dt>Lugar</dt><dd>{{ autor.perfil_autor.lugar_nacimiento }}</dd>
+                    {% endif %}
+                    <dt>Libros</dt><dd>{{ autor.total_libros }}</dd>
+                </dl>
+                {% if autor.perfil_autor.biografia %}
+                <p class="bio">{{ autor.perfil_autor.biografia|truncatewords:45 }}</p>
+                {% endif %}
+            </article>
+            {% empty %}
+            <p class="vacio">No hay autores registrados.</p>
+            {% endfor %}
+        </div>
+        <p class="vacio oculto" id="vacio-autores">Ningún autor coincide con la búsqueda.</p>
+    </section>
+
+    <!-- ============ CATEGORÍAS ============ -->
+    <section class="panel" id="panel-categorias">
+        <div class="seccion-titulo">
+            <h2>Categorías</h2>
+            <p id="conteo-categorias">{{ categorias|length }} categoría{{ categorias|length|pluralize:"as" }}</p>
+        </div>
+
+        <div class="rejilla-categorias" id="rejilla-categorias">
+            {% for cat in categorias %}
+            <article class="categoria" data-buscar="{{ cat.nombre }} {{ cat.descripcion }}">
+                <h3>{{ cat.nombre }}</h3>
+                {% if cat.descripcion %}<p>{{ cat.descripcion }}</p>{% endif %}
+                <span class="conteo">{{ cat.total }} libro{{ cat.total|pluralize:"s" }}</span>
+            </article>
+            {% empty %}
+            <p class="vacio">No hay categorías registradas.</p>
+            {% endfor %}
+        </div>
+        <p class="vacio oculto" id="vacio-categorias">Ninguna categoría coincide con la búsqueda.</p>
+    </section>
+
+    <!-- ============ EDITORIALES ============ -->
+    <section class="panel" id="panel-editoriales">
+        <div class="seccion-titulo">
+            <h2>Editoriales</h2>
+            <p id="conteo-editoriales">{{ editoriales|length }} editorial{{ editoriales|length|pluralize:"es" }}</p>
+        </div>
+
+        <table class="tabla" id="tabla-editoriales">
+            <thead>
+                <tr><th>Nombre</th><th>País</th><th>Dirección</th><th>Teléfono</th><th>Email</th><th>Publicaciones</th></tr>
+            </thead>
+            <tbody>
+                {% for ed in editoriales %}
+                <tr data-buscar="{{ ed.nombre }} {{ ed.pais }} {{ ed.email }}">
+                    <td><strong>{{ ed.nombre }}</strong></td>
+                    <td>{{ ed.pais }}</td>
+                    <td>{{ ed.direccion }}</td>
+                    <td>{{ ed.telefono|default:"—" }}</td>
+                    <td>{% if ed.email %}<a href="mailto:{{ ed.email }}">{{ ed.email }}</a>{% else %}—{% endif %}</td>
+                    <td>{{ ed.total }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No hay editoriales registradas.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="vacio oculto" id="vacio-editoriales">Ninguna editorial coincide con la búsqueda.</p>
+    </section>
+
+    <p class="pie">Biblioteca · {{ libros|length }} libros · {{ autores|length }} autores · {{ total_paginas }} páginas catalogadas</p>
+</main>
+
+<!-- ============ FICHA AMPLIADA ============ -->
+<div class="velo" id="velo" role="dialog" aria-modal="true" aria-labelledby="ficha-titulo">
+    <article class="ficha" id="ficha"></article>
+</div>
+
+{{ datos_json|json_script:"datos-libros" }}
+
+<script>
+(function () {
+    'use strict';
+
+    const datos = JSON.parse(document.getElementById('datos-libros').textContent);
+    const porId = Object.fromEntries(datos.map(d => [String(d.id), d]));
+
+    const velo = document.getElementById('velo');
+    const ficha = document.getElementById('ficha');
+    const buscar = document.getElementById('buscar');
+    const pestanas = document.getElementById('pestanas');
+
+    /* ---------- Utilidades ---------- */
+    const esc = valor => String(valor ?? '').replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+
+    const fechaLarga = iso => {
+        if (!iso) return '—';
+        const f = new Date(iso + 'T00:00:00');
+        return isNaN(f) ? esc(iso) : f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
+    const normalizar = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    /* ---------- Tema ---------- */
+    const raiz = document.documentElement;
+    const guardado = localStorage.getItem('tema');
+    if (guardado) raiz.dataset.tema = guardado;
+
+    document.getElementById('tema').addEventListener('click', () => {
+        raiz.dataset.tema = raiz.dataset.tema === 'oscuro' ? 'claro' : 'oscuro';
+        localStorage.setItem('tema', raiz.dataset.tema);
+    });
+
+    /* ---------- Pestañas ---------- */
+    function mostrarPanel(nombre) {
+        pestanas.querySelectorAll('.pestana').forEach(b => b.classList.toggle('activa', b.dataset.panel === nombre));
+        document.querySelectorAll('.panel').forEach(p => p.classList.toggle('activo', p.id === 'panel-' + nombre));
+    }
+
+    pestanas.addEventListener('click', e => {
+        const boton = e.target.closest('.pestana');
+        if (boton) mostrarPanel(boton.dataset.panel);
+    });
+
+    /* ---------- Buscador ---------- */
+    const paneles = {
+        libros: { items: '#rejilla-libros .tarjeta', vacio: '#vacio-libros', conteo: '#conteo-libros', unidad: 'libro' },
+        autores: { items: '#rejilla-autores .ficha-autor', vacio: '#vacio-autores', conteo: '#conteo-autores', unidad: 'autor' },
+        categorias: { items: '#rejilla-categorias .categoria', vacio: '#vacio-categorias', conteo: '#conteo-categorias', unidad: 'categoría' },
+        editoriales: { items: '#tabla-editoriales tbody tr', vacio: '#vacio-editoriales', conteo: '#conteo-editoriales', unidad: 'editorial' }
+    };
+
+    // Texto original de cada contador, para restaurarlo al vaciar la búsqueda.
+    const conteoOriginal = Object.fromEntries(
+        Object.values(paneles).map(cfg => [cfg.conteo, document.querySelector(cfg.conteo).textContent.trim()])
+    );
+
+    function filtrar() {
+        const termino = normalizar(buscar.value.trim());
+        const activo = document.querySelector('.pestana.activa').dataset.panel;
+
+        for (const [nombre, cfg] of Object.entries(paneles)) {
+            const items = Array.from(document.querySelectorAll(cfg.items));
+            let visibles = 0;
+
+            items.forEach(item => {
+                // El buscador filtra todos los paneles a la vez.
+                const coincide = !termino || normalizar(item.dataset.buscar || item.textContent).includes(termino);
+                item.classList.toggle('oculto', !coincide);
+                if (coincide) visibles++;
+            });
+
+            document.querySelector(cfg.vacio).classList.toggle('oculto', visibles !== 0 || termino === '');
+
+            if (nombre === activo) {
+                const total = items.length;
+                document.querySelector(cfg.conteo).textContent = termino
+                    ? `${visibles} de ${total} ${cfg.unidad}${total === 1 ? '' : 's'}`
+                    : conteoOriginal[cfg.conteo];
+            }
+        }
+    }
+
+    buscar.addEventListener('input', filtrar);
+
+    document.addEventListener('keydown', e => {
+        if (e.key === '/' && document.activeElement !== buscar) {
+            e.preventDefault();
+            buscar.focus();
+        }
+        if (e.key === 'Escape') cerrar();
+    });
+
+    /* ---------- Ficha ampliada ---------- */
+    function abrir(id) {
+        const d = porId[String(id)];
+        if (!d) return;
+
+        const chips = d.categorias.length
+            ? d.categorias.map(c => `<span class="chip">${esc(c)}</span>`).join('')
+            : '<span class="meta">Sin categorías</span>';
+
+        const pubs = d.publicaciones.length
+            ? d.publicaciones.map(p => `<tr>
+                    <td>${esc(p.editorial)}</td>
+                    <td>${esc(p.pais)}</td>
+                    <td>${fechaLarga(p.fecha)}</td>
+                    <td>${esc(p.edicion)}</td>
+                </tr>`).join('')
+            : '<tr><td colspan="4">Sin publicaciones registradas</td></tr>';
+
+        const perfil = d.autor.biografia
+            ? `<p>${esc(d.autor.biografia)}</p>
+               ${d.autor.lugar ? `<p class="meta" style="margin-top:.5rem">Lugar de nacimiento: <strong>${esc(d.autor.lugar)}</strong></p>` : ''}`
+            : '<p class="meta">Sin datos biográficos.</p>';
+
+        ficha.innerHTML = `
+            <button class="cerrar" id="cerrar" aria-label="Cerrar">&times;</button>
+            ${d.portada
+                ? `<img class="ficha-portada" src="${esc(d.portada)}" alt="Portada de ${esc(d.titulo)}">`
+                : '<div class="ficha-vacia">Sin portada</div>'}
+            <div class="ficha-cuerpo">
+                <h2 id="ficha-titulo">${esc(d.titulo)}</h2>
+                <p class="subtitulo">${esc(d.autor.completo)} · ${esc(d.autor.nacionalidad)}</p>
+
+                <div class="datos">
+                    <div class="dato-mini"><div class="e">ISBN</div><div class="v">${esc(d.isbn)}</div></div>
+                    <div class="dato-mini"><div class="e">Año</div><div class="v">${esc(d.anio)}</div></div>
+                    <div class="dato-mini"><div class="e">Páginas</div><div class="v">${esc(d.paginas)}</div></div>
+                    <div class="dato-mini"><div class="e">Nacimiento autor</div><div class="v">${esc(d.autor.nacimiento)}</div></div>
+                </div>
+
+                ${d.sinopsis
+                    ? `<div class="bloque"><h4>Sinopsis</h4><p class="sinopsis">${esc(d.sinopsis)}</p></div>`
+                    : '<div class="bloque"><h4>Sinopsis</h4><p class="meta">Sin sinopsis registrada.</p></div>'}
+
+                <div class="bloque"><h4>Categorías</h4><div class="chips">${chips}</div></div>
+
+                <div class="bloque"><h4>Sobre el autor</h4>${perfil}</div>
+
+                <div class="bloque">
+                    <h4>Publicaciones</h4>
+                    <table class="tabla">
+                        <thead><tr><th>Editorial</th><th>País</th><th>Fecha</th><th>Edición</th></tr></thead>
+                        <tbody>${pubs}</tbody>
+                    </table>
+                </div>
+            </div>`;
+
+        velo.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('cerrar').addEventListener('click', cerrar);
+    }
+
+    function cerrar() {
+        velo.classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    velo.addEventListener('click', e => { if (e.target === velo) cerrar(); });
+
+    document.getElementById('rejilla-libros').addEventListener('click', e => {
+        const tarjeta = e.target.closest('.tarjeta');
+        if (!tarjeta) return;
+        location.hash = 'libro-' + tarjeta.dataset.libro;
+    });
+
+    /* ---------- Enlace profundo (#libro-5) ---------- */
+    function leerHash() {
+        const m = location.hash.match(/^#libro-(\d+)$/);
+        if (m) abrir(m[1]); else cerrar();
+    }
+
+    window.addEventListener('hashchange', leerHash);
+    leerHash();
+})();
+</script>
+
+</body>
+</html>
